@@ -6,4 +6,4 @@ scikit-learn
 python-dotenv
 tk
 sqlite3
-schedule  
+schedule
