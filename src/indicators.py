@@ -12,8 +12,14 @@ def calculate_indicators(data):
     return data
 
 def calculate_rsi(data, periods=14):
-    # Implementazione RSI come prima
-    pass
+    delta = data['close'].diff()
+    gain = (delta.where(delta > 0, 0)).fillna(0)
+    loss = (-delta.where(delta < 0, 0)).fillna(0)
+    avg_gain = gain.rolling(window=periods).mean()
+    avg_loss = loss.rolling(window=periods).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
 
 def calculate_bollinger_bands(data, window=20, num_std=2):
     rolling_mean = data['close'].rolling(window).mean()
@@ -30,6 +36,6 @@ def calculate_stochastic_oscillator(data, period=14):
     return stochastic_k, stochastic_d
 
 def calculate_atr(data, period=14):
-    data['tr'] = data[['high', 'low', 'close']].max(axis=1) - data[['high', 'low', 'close']].min(axis=1)
+    data['tr'] = data[['high', 'close']].max(axis=1) - data[['low', 'close']].min(axis=1)
     atr = data['tr'].rolling(window=period).mean()
     return atr
