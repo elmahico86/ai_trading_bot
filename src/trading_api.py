@@ -1,36 +1,23 @@
 # trading_api.py
 
-from kucoin.client import Client
-from src.config import API_KEY, API_SECRET, API_PASSPHRASE, PAPER_TRADING
-
 class KucoinAPI:
-    def __init__(self):
-        # Configura l'endpoint in base alla modalità di trading
-        if PAPER_TRADING:
-            self.client = Client(
-                API_KEY, API_SECRET, API_PASSPHRASE,
-                url='https://openapi-sandbox.kucoin.com'
-            )
-        else:
-            self.client = Client(
-                API_KEY, API_SECRET, API_PASSPHRASE,
-                url='https://api.kucoin.com'
-            )
-
-    def place_order(self, symbol, side, size):
+    # ...
+    def get_historical_data(self, symbol, timeframe):
         try:
-            order = self.client.create_market_order(
+            # Mappa dei timeframe per KuCoin
+            timeframe_mapping = {
+                '1min': '1min',
+                '5min': '5min',
+                '15min': '15min',
+                '30min': '30min',
+                '1hour': '1hour',
+                '4hour': '4hour',
+                '1day': '1day'
+            }
+            kline = self.client.get_kline_data(
                 symbol=symbol,
-                side=side,
-                size=size
+                kline_type=timeframe_mapping[timeframe]
             )
-            return order
+            return kline
         except Exception as e:
-            raise Exception(f"Errore nell'esecuzione dell'ordine: {e}")
-
-    def get_market_data(self, symbol):
-        try:
-            data = self.client.get_ticker(symbol)
-            return data
-        except Exception as e:
-            raise Exception(f"Errore nel recupero dei dati di mercato: {e}")
+            raise Exception(f"Errore nel recupero dei dati storici: {e}")
