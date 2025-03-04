@@ -1,8 +1,8 @@
 # trading_api.py
 
-import time
 from kucoin.client import Client
 from src.config import API_KEY, API_SECRET, API_PASSPHRASE, PAPER_TRADING
+import time
 
 class KucoinAPI:
     def __init__(self):
@@ -72,12 +72,23 @@ class KucoinAPI:
         except Exception as e:
             raise Exception(f"Errore nel recupero dei ticker: {e}")
 
+    def get_usdt_pairs(self):
+        """
+        Recupera tutte le coppie di trading che terminano con '-USDT'.
+        """
+        try:
+            tickers = self.get_all_tickers()
+            usdt_pairs = [ticker for ticker in tickers['ticker'] if ticker['symbol'].endswith('-USDT')]
+            return usdt_pairs
+        except Exception as e:
+            raise Exception(f"Errore nel recupero delle coppie USDT: {e}")
+
     def get_account_overview(self):
         """
         Recupera una panoramica dell'account, inclusi fondi disponibili.
         """
         try:
-            account = self.client.get_account_overview()
+            account = self.client.get_account_overview('USDT')
             return account
         except Exception as e:
             raise Exception(f"Errore nel recupero delle informazioni sull'account: {e}")
