@@ -7,17 +7,13 @@ from src.config import API_KEY, API_SECRET, API_PASSPHRASE, PAPER_TRADING
 class KucoinAPI:
     def __init__(self):
         # Configura il client con le credenziali API
-        self.client = Client(
-            API_KEY, API_SECRET, API_PASSPHRASE,
-            api_url='https://api.kucoin.com'
-        )
+        self.client = Client(API_KEY, API_SECRET, API_PASSPHRASE)
 
     def place_order(self, symbol, side, size):
         """
         Esegue un ordine di mercato sul mercato specificato.
         Se in modalità paper trading, utilizza l'endpoint di test.
         """
-
         endpoint = '/api/v1/orders'
         if PAPER_TRADING:
             endpoint = '/api/v1/orders/test'
@@ -32,10 +28,6 @@ class KucoinAPI:
 
         try:
             response = self.client._request('POST', endpoint, order_params)
-            if PAPER_TRADING:
-                print(f"Ordine di test inviato con successo: {response}")
-            else:
-                print(f"Ordine eseguito: {response}")
             return response
         except Exception as e:
             raise Exception(f"Errore nell'esecuzione dell'ordine: {e}")
@@ -55,7 +47,7 @@ class KucoinAPI:
         Recupera i dati storici (kline) per il simbolo e il timeframe specificati.
         """
         try:
-            kline_data = self.client.get_kline_data(symbol, timeframe, limit=limit)
+            kline_data = self.client.get_kline_data(symbol, kline_type=timeframe, limit=limit)
             data = []
             for kline in kline_data:
                 data.append({
@@ -66,7 +58,7 @@ class KucoinAPI:
                     'low': float(kline[4]),
                     'volume': float(kline[5])
                 })
-            return data[::-1]  # Ordina i dati dal più antico al più recente
+            return data[::-1]  # Ordina i dati dal più vecchio al più recente
         except Exception as e:
             raise Exception(f"Errore nel recupero dei dati storici: {e}")
 
@@ -89,4 +81,3 @@ class KucoinAPI:
             return account
         except Exception as e:
             raise Exception(f"Errore nel recupero delle informazioni sull'account: {e}")
-
