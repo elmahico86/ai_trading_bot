@@ -1,38 +1,32 @@
-# src/gui.py
+# gui.py
 
-from PyQt5 import QtWidgets, uic
-import sys
+import tkinter as tk
+from src.config import PAPER_TRADING
+from src.switch import switch_paper_trading
+from src.main import main
 
-class TradingBotGUI(QtWidgets.QMainWindow):
-    def __init__(self, bot):
-        super(TradingBotGUI, self).__init__()
-        uic.loadUi('ui/trading_bot.ui', self)
-        self.bot = bot
-        self.init_ui()
+class TradingBotGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("AI Trading Bot")
+        self.paper_trading = PAPER_TRADING
 
-    def init_ui(self):
-        self.startButton.clicked.connect(self.start_bot)
-        self.stopButton.clicked.connect(self.stop_bot)
-        # Altri componenti dell'interfaccia
+        self.create_widgets()
 
-    def update_dashboard(self):
-        # Aggiorna grafici e tabelle con i dati correnti
-        pass
+    def create_widgets(self):
+        self.switch_button = tk.Button(self.root, text="Modalità Paper Trading: ON" if self.paper_trading else "Modalità Paper Trading: OFF", command=self.toggle_paper_trading)
+        self.switch_button.pack()
 
-    def start_bot(self):
-        # Avvia il bot in un thread separato
-        pass
+        self.start_button = tk.Button(self.root, text="Avvia Bot", command=main)
+        self.start_button.pack()
 
-    def stop_bot(self):
-        # Ferma il bot
-        pass
-
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    bot = TradingBot()
-    gui = TradingBotGUI(bot)
-    gui.show()
-    sys.exit(app.exec_())
+    def toggle_paper_trading(self):
+        self.paper_trading = not self.paper_trading
+        switch_paper_trading(self.paper_trading)
+        stato = "ON" if self.paper_trading else "OFF"
+        self.switch_button.config(text=f"Modalità Paper Trading: {stato}")
 
 if __name__ == '__main__':
-    main()
+    root = tk.Tk()
+    app = TradingBotGUI(root)
+    root.mainloop()
