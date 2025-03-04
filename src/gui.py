@@ -47,7 +47,7 @@ class TradingBotGUI:
     def toggle_paper_trading(self):
         self.paper_trading = self.switch_var.get()
         # Aggiorna la configurazione
-        self.bot.api.paper_trading = self.paper_trading
+        self.bot.paper_trading = self.paper_trading
 
     def start_bot(self):
         # Avvia il bot in un thread separato
