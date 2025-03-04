@@ -1,59 +1,36 @@
-# src/trading_api.py
+# trading_api.py
 
-import aiohttp
-import asyncio
-import logging
-from config import API_KEY, API_SECRET, ENVIRONMENT
+from kucoin.client import Client
+from src.config import API_KEY, API_SECRET, API_PASSPHRASE, PAPER_TRADING
 
-class TradingAPI:
+class KucoinAPI:
     def __init__(self):
-        self.api_key = API_KEY
-        self.api_secret = API_SECRET
-        self.base_url = 'https://paper-api.alpaca.markets' if ENVIRONMENT == 'paper' else 'https://api.alpaca.markets'
-        self.headers = {
-            'APCA-API-KEY-ID': self.api_key,
-            'APCA-API-SECRET-KEY': self.api_secret
-        }
-        self.session = aiohttp.ClientSession(headers=self.headers)
-        self.logger = logging.getLogger('TradingAPI')
+        # Configura l'endpoint in base alla modalità di trading
+        if PAPER_TRADING:
+            self.client = Client(
+                API_KEY, API_SECRET, API_PASSPHRASE,
+                url='https://openapi-sandbox.kucoin.com'
+            )
+        else:
+            self.client = Client(
+                API_KEY, API_SECRET, API_PASSPHRASE,
+                url='https://api.kucoin.com'
+            )
 
-    async def place_order(self, symbol, qty, side, type='market', time_in_force='gtc'):
-        url = f'{self.base_url}/v2/orders'
-        order = {
-            'symbol': symbol,
-            'qty': qty,
-            'side': side,
-            'type': type,
-            'time_in_force': time_in_force
-        }
-        for attempt in range(5):
-            try:
-                async with self.session.post(url, json=order) as resp:
-                    if resp.status == 200:
-                        response = await resp.json()
-                        self.logger.info(f"Ordine piazzato: {response}")
-                        return response
-                    else:
-                        error = await resp.text()
-                        self.logger.error(f"Errore API ({resp.status}): {error}")
-                        if resp.status in [500, 502, 503, 504]:
-                            await asyncio.sleep(2 ** attempt)
-                            continue
-                        else:
-                            break
-            except aiohttp.ClientError as e:
-                self.logger.error(f"Errore di connessione: {e}")
-                await asyncio.sleep(2 ** attempt)
-        return None
+    def place_order(self, symbol, side, size):
+        try:
+            order = self.client.create_market_order(
+                symbol=symbol,
+                side=side,
+                size=size
+            )
+            return order
+        except Exception as e:
+            raise Exception(f"Errore nell'esecuzione dell'ordine: {e}")
 
-    async def get_position(self, symbol):
-        url = f'{self.base_url}/v2/positions/{symbol}'
-        async with self.session.get(url) as resp:
-            if resp.status == 200:
-                position = await resp.json()
-                return position
-            else:
-                return None
-
-    async def close(self):
-        await self.session.close()
+    def get_market_data(self, symbol):
+        try:
+            data = self.client.get_ticker(symbol)
+            return data
+        except Exception as e:
+            raise Exception(f"Errore nel recupero dei dati di mercato: {e}")
