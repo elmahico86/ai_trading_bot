@@ -9,6 +9,8 @@ def calculate_indicators(data):
     data['bollinger_upper'], data['bollinger_lower'] = calculate_bollinger_bands(data)
     data['stochastic_k'], data['stochastic_d'] = calculate_stochastic_oscillator(data)
     data['atr'] = calculate_atr(data)
+    data['momentum'] = calculate_momentum(data)
+    data['vwap'] = calculate_vwap(data)
     return data
 
 def calculate_rsi(data, periods=14):
@@ -39,3 +41,13 @@ def calculate_atr(data, period=14):
     data['tr'] = data[['high', 'close']].max(axis=1) - data[['low', 'close']].min(axis=1)
     atr = data['tr'].rolling(window=period).mean()
     return atr
+
+def calculate_momentum(data, period=10):
+    momentum = data['close'] - data['close'].shift(period)
+    return momentum
+
+def calculate_vwap(data):
+    q = data['volume']
+    p = data['close']
+    vwap = (p * q).cumsum() / q.cumsum()
+    return vwap
