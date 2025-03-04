@@ -3,7 +3,6 @@
 import os
 from dotenv import load_dotenv
 
-# Carica le variabili d'ambiente dal file .env
 load_dotenv()
 
 # Chiavi API di KuCoin
@@ -15,8 +14,10 @@ API_PASSPHRASE = os.getenv('KUCOIN_API_PASSPHRASE')
 PAPER_TRADING = True  # Modalità Paper Trading attiva di default
 
 # Parametri di trading
-SYMBOL = 'BTC-USDT'
-TRADE_AMOUNT = 0.001
+TRADE_SYMBOLS = ['BTC-USDT', 'ETH-USDT', 'ADA-USDT']  # Coppie ottimizzate
+TRADE_TIMEFRAMES = ['1min', '5min', '15min']  # Timeframe per lo scalping
+MAX_RISK_PER_TRADE = 0.01  # 1% del capitale per trade
+MAX_DAILY_DRAWDOWN = 0.05  # 5% di perdita massima giornaliera
 
 # Altre configurazioni
 LOG_FILE = 'ai_trading_bot.log'
