@@ -33,3 +33,8 @@ class DataManager:
             VALUES (?, ?, ?, ?)
         ''', (symbol, side, size, price))
         self.connection.commit()
+
+    def get_trade_history(self):
+        cursor = self.connection.cursor()
+        cursor.execute('SELECT * FROM trades ORDER BY timestamp DESC')
+        return cursor.fetchall()
