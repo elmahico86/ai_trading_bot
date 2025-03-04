@@ -21,17 +21,18 @@ class DataManager:
                 side TEXT,
                 size REAL,
                 price REAL,
+                profit_loss REAL,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         self.connection.commit()
 
-    def store_trade(self, symbol, side, size, price):
+    def store_trade(self, symbol, side, size, price, profit_loss):
         cursor = self.connection.cursor()
         cursor.execute('''
-            INSERT INTO trades (symbol, side, size, price)
-            VALUES (?, ?, ?, ?)
-        ''', (symbol, side, size, price))
+            INSERT INTO trades (symbol, side, size, price, profit_loss)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (symbol, side, size, price, profit_loss))
         self.connection.commit()
 
     def get_trade_history(self):
