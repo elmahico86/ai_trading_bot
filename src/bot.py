@@ -1,73 +1,42 @@
-# src/bot.py
+# bot.py
 
-import asyncio
-from data_manager import DataManager
-from model import TradingModel
-from trading_api import TradingAPI
-from risk_manager import RiskManager
-from alert_system import AlertSystem
-from config import SYMBOLS, RISK_PARAMS, TIME_INTERVALS
-from indicators import calculate_atr
+from src.trading_api import KucoinAPI
+from src.data_manager import DataManager
+from src.indicators import calculate_sma, calculate_ema, calculate_rsi
+from src.model import TradingModel
+import pandas as pd
 
 class TradingBot:
     def __init__(self):
+        self.api = KucoinAPI()
         self.data_manager = DataManager()
         self.model = TradingModel()
-        self.trading_api = TradingAPI()
-        self.risk_manager = RiskManager(RISK_PARAMS['initial_balance'])
-        self.alert_system = AlertSystem()
-        self.symbols = SYMBOLS
 
-    async def run(self):
-        await self.model.load()
-        while True:
-            tasks = [self.process_symbol(symbol) for symbol in self.symbols]
-            await asyncio.gather(*tasks)
-            await asyncio.sleep(TIME_INTERVALS['tick_processing'])
+    def run(self, symbol, trade_amount):
+        # Recupera i dati di mercato
+        market_data = self.api.get_market_data(symbol)
+        data_frame = pd.DataFrame([market_data])
 
-    async def process_symbol(self, symbol):
-        data = self.data_manager.get_latest_data(symbol)
-        data = self.data_manager.preprocess_data(data)
-        if data.empty or len(data) < TIME_STEPS:
-            return
-        X = self.prepare_input(data)
-        prediction = self.model.predict(X)
-        decision = self.should_trade(data, prediction)
-        if decision in ['buy', 'sell']:
-            await self.execute_trade(symbol, decision, data)
+        # Calcola gli indicatori tecnici
+        data_frame['sma'] = calculate_sma(data_frame, window=14)
+        data_frame['ema'] = calculate_ema(data_frame, window=14)
+        data_frame['rsi'] = calculate_rsi(data_frame)
 
-    def prepare_input(self, data):
-        features = data.tail(TIME_STEPS).drop(['timestamp', 'symbol'], axis=1).values
-        features = features.reshape(1, TIME_STEPS, -1)
-        return features
+        # Prepara i dati per il modello
+        # data = preprocess(data_frame)
 
-    def should_trade(self, data, prediction):
-        # Logica decisionale avanzata
-        # Esempio semplificato:
-        if prediction > 0.5:
-            return 'buy'
-        elif prediction < -0.5:
-            return 'sell'
-        else:
-            return 'hold'
+        # Effettua la previsione
+        # prediction = self.model.predict(data)
 
-    async def execute_trade(self, symbol, decision, data):
-        atr = calculate_atr(data)
-        current_price = data['close'].iloc[-1]
-        position = await self.trading_api.get_position(symbol)
-        
-        if decision == 'buy' and not position:
-            stop_loss = self.risk_manager.calculate_stop_loss(current_price, atr)
-            take_profit = self.risk_manager.calculate_take_profit(current_price, atr)
-            qty = self.risk_manager.calculate_position_size(RISK_PARAMS['risk_per_trade'], current_price - stop_loss)
-            order = await self.trading_api.place_order(symbol, qty, 'buy')
-            self.alert_system.send_message(f"Aperta posizione LONG su {symbol} con quantità {qty}")
-        elif decision == 'sell' and position:
-            order = await self.trading_api.place_order(symbol, position['qty'], 'sell')
-            self.alert_system.send_message(f"Chiusa posizione su {symbol}")
-        else:
-            pass  # Nessuna azione
+        # Strategia di trading basata sulla previsione
+        # if prediction > soglia:
+        #     self.execute_trade(symbol, 'buy', trade_amount)
+        # elif prediction < soglia:
+        #     self.execute_trade(symbol, 'sell', trade_amount)
 
-    async def stop(self):
-        await self.data_manager.close()
-        await self.trading_api.close()
+    def execute_trade(self, symbol, side, amount):
+        order = self.api.place_order(symbol, side, amount)
+        price = order['dealFunds'] / order['dealSize']
+        self.data_manager.store_trade(symbol, side, amount, price)
+        print(f"Eseguito ordine {side} per {amount} {symbol} a {price}")
+
