@@ -1,29 +1,25 @@
-# src/test.py
+# test.py
 
 import unittest
-from data_manager import DataManager
-from model import TradingModel
-import pandas as pd
+from src.trading_api import KucoinAPI
 
-class TestTradingBot(unittest.TestCase):
+class TestKucoinAPI(unittest.TestCase):
     def setUp(self):
-        self.data_manager = DataManager()
-        self.model = TradingModel()
+        self.api = KucoinAPI()
 
-    def test_data_fetch(self):
-        df = self.data_manager.get_latest_data('EURUSD')
-        self.assertIsNotNone(df)
-        self.assertGreater(len(df), 0)
+    def test_get_market_data(self):
+        data = self.api.get_market_data('BTC-USDT')
+        self.assertIsNotNone(data)
+        self.assertIn('price', data)
 
-    def test_model_prediction(self):
-        df = pd.read_csv('test_data.csv')
-        df = self.data_manager.preprocess_data(df)
-        X = df.drop(['timestamp', 'symbol'], axis=1).values.reshape(1, TIME_STEPS, -1)
-        prediction = self.model.predict(X)
-        self.assertIsNotNone(prediction)
-
-    def tearDown(self):
-        pass
+    def test_place_order(self):
+        # Questo test sarà valido solo in modalità Paper Trading
+        if self.api.client.url == 'https://openapi-sandbox.kucoin.com':
+            order = self.api.place_order('BTC-USDT', 'buy', '0.001')
+            self.assertIsNotNone(order)
+            self.assertIn('orderId', order)
+        else:
+            self.skipTest('Test valido solo in modalità Paper Trading')
 
 if __name__ == '__main__':
     unittest.main()
