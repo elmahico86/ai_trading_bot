@@ -1,5 +1,3 @@
-# config.py
-
 import os
 from dotenv import load_dotenv
 
@@ -14,13 +12,16 @@ API_PASSPHRASE = os.getenv('KUCOIN_API_PASSPHRASE')
 PAPER_TRADING = True  # Modalità Paper Trading attiva di default
 
 # Parametri di trading
-NUM_TOP_PAIRS = 5  # Numero di migliori coppie USDT da selezionare
+NUM_TOP_PAIRS = 5              # Numero di migliori coppie USDT da selezionare
 TRADE_TIMEFRAMES = ['1min', '5min', '15min']  # Timeframes per lo scalping
 
-MAX_RISK_PER_TRADE = 0.01  # 1% del capitale per trade
-MAX_DAILY_DRAWDOWN = 0.05  # 5% di perdita massima giornaliera
-MIN_VOLUME = 1000000  # Volume minimo in USDT per considerare una coppia
-MAX_SPREAD_PERCENTAGE = 0.1  # Spread massimo come percentuale del prezzo (0.1%)
+MAX_RISK_PER_TRADE = 0.01      # 1% del capitale per trade
+MAX_DAILY_DRAWDOWN = 0.05      # 5% di perdita massima giornaliera
+MIN_VOLUME = 1000000           # Volume minimo in USDT per considerare una coppia
+MAX_SPREAD_PERCENTAGE = 0.1    # Spread massimo come percentuale del prezzo (0.1%)
+
+# Numero di candele da recuperare
+CANDLE_LIMIT = 1000            # Utilizza 1000 candele per timeframe
 
 # Altre configurazioni
 LOG_FILE = 'ai_trading_bot.log'

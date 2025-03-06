@@ -1,5 +1,3 @@
-# risk_manager.py
-
 class RiskManager:
     def __init__(self, max_risk_per_trade=0.01, max_daily_drawdown=0.05):
         self.max_risk_per_trade = max_risk_per_trade
@@ -20,5 +18,5 @@ class RiskManager:
             return False
         return True
 
-    def reset_daily_loss(self):
+    def reset_daily_drawdown(self):
         self.daily_loss = 0

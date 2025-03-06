@@ -1,5 +1,3 @@
-# main.py
-
 from src.bot import TradingBot
 
 def main():

@@ -1,5 +1,3 @@
-# data_manager.py
-
 import sqlite3
 import os
 
