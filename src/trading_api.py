@@ -45,6 +45,11 @@ class KucoinAPI:
         """
         try:
             kline_data = self.client.get_kline_data(symbol, kline_type=timeframe, limit=limit)
+            print(f"Risposta API per {symbol} ({timeframe}): {kline_data}")  # Log della risposta
+            if not kline_data:
+                print(f"Nessun dato trovato per {symbol} su timeframe {timeframe}.")
+                return []
+            
             data = []
             for kline in kline_data:
                 data.append({
@@ -57,20 +62,12 @@ class KucoinAPI:
                 })
             return data[::-1]  # Ordina i dati dal più vecchio al più recente
         except Exception as e:
-            raise Exception(f"Errore nel recupero dei dati storici: {e}")
+            print(f"Errore nel recupero dei dati storici per {symbol}: {e}")
+            return []
 
     def get_large_history(self, symbol, timeframe, total_limit=1000):
         """
         Recupera un dataset ampio di candele storiche accumulando richieste multiple.
-        Assicura che il dataset finale sia ordinato cronologicamente.
-
-        Args:
-            symbol (str): Il simbolo (es. 'BTC-USDT').
-            timeframe (str): Il timeframe (es. '1min', '5min', '15min').
-            total_limit (int): Il numero totale di candele desiderate (default: 1000).
-
-        Returns:
-            list: Lista di candele accumulate (ogni candela è un dizionario con valori OHLCV).
         """
         candles = []
         limit_per_request = 100  # Limite massimo per richiesta

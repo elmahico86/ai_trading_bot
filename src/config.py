@@ -1,7 +1,16 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Trova il percorso del file .env nella root del progetto
+env_path = Path(__file__).resolve().parent.parent / ".env"
+
+# Verifica che il file .env esista
+if not env_path.exists():
+    raise FileNotFoundError(f"File .env non trovato nel percorso: {env_path}")
+
+# Carica le variabili d'ambiente
+load_dotenv(dotenv_path=env_path)
 
 # Chiavi API di KuCoin
 API_KEY = os.getenv('KUCOIN_API_KEY')
